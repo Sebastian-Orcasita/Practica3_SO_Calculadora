@@ -4,16 +4,17 @@
 #include <string.h>
 
 #define MAX 10
-#define EPS 1e-9
+#define EPS 1e-6
+#define PI 3.14159265358979323846
 
 double stack[MAX];
 int top = -1;
 int hasResult = 0;
 
-/* ========= PANTALLA ========= */
+// PANTALLA 
 void clearScreen() { system("clear"); }
 
-/* ========= PILA ========= */
+// PILA
 int isFull() { return top == MAX - 1; }
 int isEmpty() { return top == -1; }
 
@@ -46,7 +47,7 @@ void clearStack() {
     hasResult = 0;
 }
 
-/* ========= MOSTRAR PILA ========= */
+// MOSTRAR PILA
 void showStack() {
     printf("=========== PILA RPN ===========\n");
     for (int i = MAX - 1; i >= 0; i--) {
@@ -64,7 +65,12 @@ void showStack() {
     printf("================================\n");
 }
 
-/* ========= OPERACIONES ========= */
+// CONVERSIÓN
+double toRadians(double degrees) {
+    return degrees * PI / 180.0;
+}
+
+// OPERACIONES
 void performOperation(int op) {
     double a, b, result;
 
@@ -85,22 +91,37 @@ void performOperation(int op) {
             if (fabs(b) < EPS) { printf("División por cero.\n"); return; }
             result = a / b; break;
         case 5: result = pow(a, b); break;
+
         case 6:
             if (isEmpty()) return;
             a = pop();
             if (a < 0) { printf("Raíz negativa.\n"); return; }
             result = sqrt(a); break;
-        case 7: if (isEmpty()) return; a = pop(); result = sin(a); break;
-        case 8: if (isEmpty()) return; a = pop(); result = cos(a); break;
-        case 9:
+
+        case 7:  // SENO EN GRADOS
             if (isEmpty()) return;
             a = pop();
-            if (fabs(cos(a)) < EPS) {
-                printf("Tangente indefinida (cos≈0).\n");
+            result = sin(toRadians(a));
+            break;
+
+        case 8:  // COSENO EN GRADOS
+            if (isEmpty()) return;
+            a = pop();
+            result = cos(toRadians(a));
+            break;
+
+        case 9:  // TANGENTE EN GRADOS
+            if (isEmpty()) return;
+            a = pop();
+            double rad = toRadians(a);
+            if (fabs(cos(rad)) < EPS) {
+                printf("Tangente indefinida (cos=0 en %lf°).\n", a);
                 push(a);
                 return;
             }
-            result = tan(a); break;
+            result = tan(rad);
+            break;
+
         default:
             printf("Operación inválida.\n");
             return;
@@ -110,7 +131,7 @@ void performOperation(int op) {
     hasResult = 1;
 }
 
-/* ========= MENÚ ========= */
+// MENU
 void menu() {
     printf("\n1. Ingresar número\n");
     printf("2. Seleccionar operación\n");
@@ -127,7 +148,7 @@ void operationsMenu() {
     printf("Seleccione: ");
 }
 
-/* ========= MAIN ========= */
+// MAIN
 int main() {
     int option, op;
     double num;
@@ -150,8 +171,6 @@ int main() {
             if (sscanf(input, "%lf", &num) == 1) {
                 push(num);
                 hasResult = 0;
-            } else {
-                printf("Número inválido.\n");
             }
         }
         else if (option == 2) {
@@ -164,19 +183,10 @@ int main() {
             else
                 printf("Operación inválida.\n");
         }
-        else if (option == 3) {
-            pop();
-            hasResult = 0;
-        }
-        else if (option == 4) {
-            clearStack();
-        }
-        else if (option == 5) {
-            break;
-        }
-        else {
-            printf("Opción inválida del menú.\n");
-        }
+        else if (option == 3) { pop(); hasResult = 0; }
+        else if (option == 4) { clearStack(); }
+        else if (option == 5) break;
+        else printf("Opción inválida del menú.\n");
 
         printf("\nPresione Enter para continuar...");
         fgets(input, sizeof(input), stdin);
@@ -184,5 +194,6 @@ int main() {
 
     return 0;
 }
+
 
 
